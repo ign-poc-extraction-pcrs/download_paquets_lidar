@@ -10,12 +10,13 @@ pip install -r requirements.txt
 ```
 
 Lancer serveur :
-- dev (test-dev-sidc) : http://test-dev-sidc:5000/download/lidar
+- dev (ssh test-dev-sidc) : http://test-dev-sidc:5000/download/lidar
 ```
 python run.py
 ```
-- prod (test-prod-sidc) : http://test-prod-sidc:5000/download/lidar
+- prod (ssh test-prod-sidc) : http://test-prod-sidc:5000/download/lidar
 ```
+screen -r download_paquets_lidar
 python run_prod.py
 ```
 
