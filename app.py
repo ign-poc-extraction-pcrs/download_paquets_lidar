@@ -11,7 +11,6 @@ from librairie_commune.io.ShpService import create_shp_file, update_shp_file
 
 
 app = Flask(__name__)
-PATH_SHP = "/store/store-SVRP/arch-diff/travail/arborescence_dev/private/lardilly"
 
 @app.route('/download/lidar', methods=['GET'])
 def download_lidar():
@@ -21,7 +20,7 @@ def download_lidar():
 @app.route('/download/lidar/shp', methods=['GET', 'POST'])
 def download_shp():
     # path and file du shp
-    
+    PATH_SHP = "/tmp/api_dispo_produit_tmp_file"
     file_shp = "TA_diff_pkk_lidarhd"
 
     # recuperation des paquets lidar
@@ -79,8 +78,3 @@ def get_paquets_lidar(path_shp, file_shp):
     
     # creation du shapefile
     create_shp_file(f"{path_shp}/{file_shp}", colonne, data, 2154)
-
-
-
-if __name__ == '__main__':
-    app.run(host="test-dev-sidc", port=5000, debug=True)
