@@ -1,5 +1,5 @@
 from distutils import extension
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify
 import requests
 import json
 import xmltodict
@@ -11,6 +11,10 @@ from librairie_commune.io.ShpService import create_shp_file, update_shp_file
 
 
 app = Flask(__name__)
+
+@app.route('/', methods=['GET'])
+def main():
+    return redirect(url_for('download_lidar'))
 
 @app.route('/download/lidar', methods=['GET'])
 def download_lidar():
@@ -24,7 +28,7 @@ def download_shp():
     file_shp = "TA_diff_pkk_lidarhd"
 
     # recuperation des paquets lidar
-    get_paquets_lidar(PATH_SHP, file_shp)  
+    create_shp_lidar(PATH_SHP, file_shp)  
     # chemin absolue du shp
     file = f"{PATH_SHP}/{file_shp}"
     # les extensions du shp
@@ -41,14 +45,23 @@ def download_shp():
     memory_file.seek(0)
     return send_file(memory_file, download_name=f'grille.zip', as_attachment=True)
 
+@app.route('/download/lidar/geojson', methods=['GET', 'POST'])
+def lidar_geojson():
+    geojson = create_geojson_lidar()
+    return jsonify(geojson)
 
-def get_paquets_lidar(path_shp, file_shp):
-    """ recupere les paquets lidar
+def get_key():
+    key = "c90xknypoz1flvgojchbphgt"
+    return key
+
+def get_paquets_lidar():
+    """récupere les paquets lidar
+
+    Returns:
+        list: list des dalles lidae
     """
     # on recupere le xml
-    SIZE = 2000  
-    data = ""
-    key = "c90xknypoz1flvgojchbphgt"
+    key = get_key()
     r = requests.get(f"https://wxs.ign.fr/{key}/telechargement/prepackage?request=GetCapabilities")
     # on parse et on transforme le xml en dict
     obj = xmltodict.parse(r.content)
@@ -57,6 +70,18 @@ def get_paquets_lidar(path_shp, file_shp):
     # on recupere les differents paquets lidar [list]
     paquets_lidar = json_lidar["Download_Capabilities"]["Capability"]["Resources"]["Resource"]
     # on boucle sur chaque paquet pour recuperer les coordonnées
+    return paquets_lidar
+
+
+def create_shp_lidar(path_shp, file_shp):
+    """Creation du shapefile lidar
+
+    Args:
+        path_shp (str): chemin du shp
+        file_shp (str): nom du fichier shp
+    """
+    SIZE = 2000  
+    paquets_lidar = get_paquets_lidar()
     data = []
     for key , paquet in enumerate(paquets_lidar) :
         # on recupere le x et y du nom du paquet
@@ -78,3 +103,34 @@ def get_paquets_lidar(path_shp, file_shp):
     
     # creation du shapefile
     create_shp_file(f"{path_shp}/{file_shp}", colonne, data, 2154)
+
+
+def create_geojson_lidar():
+    """Creation du geojson lidar
+    """
+    key = get_key()
+    SIZE = 2000  
+    paquets_lidar = get_paquets_lidar()
+    data = []
+    for paquet in paquets_lidar:
+        # on recupere le x et y du nom du paquet
+        name_paquet = paquet["Name"]
+        x, y = name_paquet.split("-")[2].split("_")
+        name = paquet["Name"].split("$")[-1]
+
+        # on convertit les bonnes coordonnées
+        x_min = int(x) * 1000
+        y_min = int(y) * 1000
+        x_max = x_min + SIZE
+        y_max = y_min - SIZE
+
+        # on creer le json
+        data.append({name: {
+            "Geometry": {
+                'type': 'Polygon', 
+                'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]
+                },
+            "url_telechargement": f"https://wxs.ign.fr/{key}/telechargement/prepackage/{name_paquet}/file/{name}.7z"    
+            },
+        })
+    return data

@@ -19,7 +19,6 @@ button {
 button::after {
     content: "";
     position: absolute;
-    background-color:  #f5b7b1 ;
     width: 30px;
     margin-right: 555px;
     bottom: 0;
@@ -28,12 +27,11 @@ button::after {
     transform: skew(-30deg);
 } 
 button::before{
-    content:"Téléchargement grille diffusion prépaquets Lidar HD";
+    
     line-height: 50px;
     text-align: center;
     border-radius: 0 10px 10px 0;
     position: absolute;
-    background-color:  #f5b7b1 ;
     width: 570px;
     bottom: 0;
     top: 0;
@@ -50,4 +48,23 @@ button:nth-child(5)::after,form button:nth-child(5)::before{
 }
 button:hover{
     filter: brightness(.8);
+}
+
+.shp::before{
+    background-color:  #f5b7b1 ;
+    content:"Téléchargement grille diffusion prépaquets Lidar HD";
+}
+
+.shp::after{
+    background-color:  #f5b7b1 ;
+}
+
+
+.geojson::before{
+    background-color:  #93ff79 ;
+    content:"Geojson grille diffusion prépaquets Lidar HD";
+}
+
+.geojson::after{
+    background-color:  #93ff79 ;
 }
