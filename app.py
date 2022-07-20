@@ -7,7 +7,7 @@ from io import BytesIO
 from zipfile import ZipFile
 import os, glob
 
-from librairie_commune.io.ShpService import create_shp_file, update_shp_file
+from create_shp import create_shp_file
 
 
 app = Flask(__name__)
