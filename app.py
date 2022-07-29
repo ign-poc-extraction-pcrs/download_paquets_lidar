@@ -119,24 +119,26 @@ def create_geojson_lidar():
     for paquet in paquets_lidar:
         # on recupere le x et y du nom du paquet
         name_paquet = paquet["Name"]
-        x, y = name_paquet.split("-")[2].split("_")
+        x = name_paquet.split("-")[2].split("_")[0]
+        y = name_paquet.split("-")[2].split("_")[1]
         name = paquet["Name"].split("$")[-1]
 
         # on convertit les bonnes coordonnées
-        x_min = int(x) * 1000
-        y_min = int(y) * 1000
-        x_max = x_min + SIZE
-        y_max = y_min - SIZE
+        if isint(x) and isint(y):
+            x_min = int(x) * 1000
+            y_min = int(y) * 1000
+            x_max = x_min + SIZE
+            y_max = y_min - SIZE
 
-        # on creer le json
-        data.append({name: {
-            "Geometry": {
-                'type': 'Polygon', 
-                'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]
+            # on creer le json
+            data.append({name: {
+                "Geometry": {
+                    'type': 'Polygon', 
+                    'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]
+                    },
+                "url_telechargement": f"https://wxs.ign.fr/{key}/telechargement/prepackage/{name_paquet}/file/{name}.7z"    
                 },
-            "url_telechargement": f"https://wxs.ign.fr/{key}/telechargement/prepackage/{name_paquet}/file/{name}.7z"    
-            },
-        })
+            })
     return data
 
 
