@@ -28,7 +28,7 @@ def create_shp_file(path: str, colonnes: List[Dict], data: List[Dict], epsg_code
         column_key = []
         # pour chaque clé on crée une colonne
         for key_ta in colonnes:
-            shp.field(key_ta["nom_colonne"], key_ta["type"])
+            shp.field(key_ta["nom_colonne"], key_ta["type"], size=250)
             column_key.append(key_ta["nom_colonne"])
         # pour chaque valeur on crée une entrée
         for value_ta in data:

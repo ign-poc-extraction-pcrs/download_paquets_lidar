@@ -83,24 +83,28 @@ def create_shp_lidar(path_shp, file_shp):
     SIZE = 2000  
     paquets_lidar = get_paquets_lidar()
     data = []
+    colonne = []
     for key , paquet in enumerate(paquets_lidar) :
         # on recupere le x et y du nom du paquet
-        name = paquet["Name"]
-        x, y = name.split("-")[2].split("_")
+        name_paquet = paquet["Name"]
+        x = name_paquet.split("-")[2].split("_")[0]
+        y = name_paquet.split("-")[2].split("_")[1]
         name = paquet["Name"].split("$")[-1]
 
+        if isint(x) and isint(y):
+            # on convertit les bonnes coordonnées
+            x_min = int(x) * 1000
+            y_min = int(y) * 1000
+            x_max = x_min + SIZE
+            y_max = y_min - SIZE
 
-        # on convertit les bonnes coordonnées
-        x_min = int(x) * 1000
-        y_min = int(y) * 1000
-        x_max = x_min + SIZE
-        y_max = y_min - SIZE
-
-        # ce qui va etre envoyer dans ls shp
-        name_colonne = "nom_pkk"
-        colonne = [{"nom_colonne": name_colonne, "type": "C"}]
-        data.append({name_colonne: name, "Geometry": {'type': 'Polygon', 'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]}})
-    
+            # ce qui va etre envoyer dans ls shp
+            name_colonne = "nom_pkk"
+            colonne = [{"nom_colonne": name_colonne, "type": "C"}, {"nom_colonne": "url_telechargement", "type": "C"}]
+            data.append({name_colonne: name, 
+                        "url_telechargement": f"https://wxs.ign.fr/{get_key()}/telechargement/prepackage/{name_paquet}/file/{name}.7z" , 
+                        "Geometry": {'type': 'Polygon', 'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]}})
+        
     # creation du shapefile
     create_shp_file(f"{path_shp}/{file_shp}", colonne, data, 2154)
 
@@ -134,3 +138,13 @@ def create_geojson_lidar():
             },
         })
     return data
+
+
+def isint(x):
+    try:
+        a = float(x)
+        b = int(a)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return a == b
